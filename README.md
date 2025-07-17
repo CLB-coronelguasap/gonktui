@@ -8,12 +8,11 @@ This project is a text-based user interface (TUI) game built using Python. It ut
 gonktui
 ├── README.md
 ├── requirements.txt
-└── src
-    ├── game
-    │   ├── engine.py
-    ├── main.py
-    └── ui
-        └── tui.py
+├── game
+│   ├── engine.py
+├── main.py
+└── ui
+    └── tui.py
 
 6 directories, 11 files
 ```
