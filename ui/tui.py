@@ -6,6 +6,7 @@ import requests
 import json
 import os
 
+# ASCII art logo for the main menu
 GONKWARE_ART = [
     " ██████╗  ██████╗ ███╗   ██╗██╗  ██╗██╗    ██╗ █████╗ ██████╗ ███████╗",
     "██╔════╝ ██╔═══██╗████╗  ██║██║ ██╔╝██║    ██║██╔══██╗██╔══██╗██╔════╝",
@@ -15,9 +16,14 @@ GONKWARE_ART = [
     " ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝"
 ]
 
+# Path for saving user preferences
 PREFS_FILE = os.path.expanduser("~/.gonkware_prefs.json")
 
 def fetch_categories():
+    """
+    Fetches trivia categories from the Open Trivia DB API.
+    Returns a list of category dictionaries.
+    """
     url = "https://opentdb.com/api_category.php"
     try:
         resp = requests.get(url, timeout=5)
@@ -27,12 +33,19 @@ def fetch_categories():
         return []
 
 class TUI:
+    """
+    Text User Interface class for the GONKWARE trivia game.
+    Handles menus, category selection, loading screens, and game rendering.
+    """
     def __init__(self):
         self.screen = None
         self.selected_categories = set()
         self.load_preferences()
 
     def load_preferences(self):
+        """
+        Loads user category preferences from a local file.
+        """
         if os.path.exists(PREFS_FILE):
             try:
                 with open(PREFS_FILE, "r") as f:
@@ -42,6 +55,9 @@ class TUI:
                 self.selected_categories = set()
 
     def save_preferences(self):
+        """
+        Saves user category preferences to a local file.
+        """
         try:
             with open(PREFS_FILE, "w") as f:
                 json.dump({"categories": list(self.selected_categories)}, f)
@@ -49,6 +65,9 @@ class TUI:
             pass
 
     def _init_colors(self):
+        """
+        Initializes color pairs for the TUI.
+        """
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_CYAN, -1)      # Logo
@@ -59,9 +78,15 @@ class TUI:
         curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE) # Menu box
 
     def display_menu(self):
+        """
+        Displays the main menu and returns the selected categories or None if exited.
+        """
         return curses.wrapper(self._main_menu)
 
     def _main_menu(self, stdscr):
+        """
+        Internal method to render the main menu.
+        """
         self._init_colors()
         stdscr.clear()
         stdscr.border(0)
@@ -181,9 +206,15 @@ class TUI:
         stdscr.border(0)
 
     def display_loading(self, fetching=False):
+        """
+        Displays a stylized loading screen with technical messages and spinner.
+        """
         curses.wrapper(self._loading_screen, fetching)
 
     def _loading_screen(self, stdscr, fetching):
+        """
+        Internal method for the loading screen animation.
+        """
         self._init_colors()
         stdscr.clear()
         stdscr.border(0)
@@ -215,33 +246,38 @@ class TUI:
             "[gonkware] Checking system entropy...",
             "[gonkware] Trivia engine ready.",
         ]
-        y_start = max_y // 2 - len(messages) // 2
-
+        y_start = 2
+        x_left = 2
         spinner = ['|', '/', '-', '\\']
         for i, msg in enumerate(messages):
             y = y_start + i
-            x = max_x // 2 - len(msg) // 2
             color = curses.color_pair(2) if i < len(messages) - 1 else curses.color_pair(4) | curses.A_BOLD
-            stdscr.addstr(y, x, msg, color)
+            stdscr.addstr(y, x_left, msg, color)
             stdscr.refresh()
-            # Spinner animation for fetching step
+            # Spinner animation for technical steps
             if fetching and ("Fetching questions" in msg or "Waiting for API rate limit" in msg or "HTTP GET" in msg):
                 for spin in range(15):
-                    stdscr.addstr(y, x + len(msg) + 2, spinner[spin % 4], curses.color_pair(3) | curses.A_BOLD)
+                    stdscr.addstr(y, x_left + len(msg) + 2, spinner[spin % 4], curses.color_pair(3) | curses.A_BOLD)
                     stdscr.refresh()
                     time.sleep(0.08)
-                stdscr.addstr(y, x + len(msg) + 2, " ", curses.color_pair(3))
+                stdscr.addstr(y, x_left + len(msg) + 2, " ", curses.color_pair(3))
             else:
                 time.sleep(0.18 if i < len(messages) - 2 else 0.5)
         time.sleep(0.5)
 
     def render_game_state(self, game_state):
+        """
+        Renders the current game state (question, choices, score, lives).
+        """
         if game_state.get("loading"):
             self.display_loading()
             return None
         return curses.wrapper(self._render, game_state)
 
     def _render(self, stdscr, game_state):
+        """
+        Internal method to render the question and choices.
+        """
         stdscr.clear()
         stdscr.border()
         max_y, max_x = stdscr.getmaxyx()
@@ -292,14 +328,21 @@ class TUI:
                 return choices[selected]
 
     def get_user_input(self):
-        # This will be called after render_game_state
-        # The selected answer is returned from render_game_state
-        pass  # Not needed, handled in render_game_state
+        """
+        Not needed, handled in render_game_state.
+        """
+        pass
 
     def display_loading_and_fetch(self, engine):
+        """
+        Displays the animated loading screen and fetches questions per category.
+        """
         curses.wrapper(self._loading_and_fetch, engine)
 
     def _loading_and_fetch(self, stdscr, engine):
+        """
+        Internal method for loading screen with real-time question fetching.
+        """
         self._init_colors()
         stdscr.clear()
         stdscr.border(0)
@@ -315,7 +358,6 @@ class TUI:
             "[gonkware] Building question request queue...",
             "[gonkware] Fetching questions from categories...",
         ]
-        # Move messages to the top left
         x_left = 2
         y_start = 2
 

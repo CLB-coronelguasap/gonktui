@@ -4,7 +4,12 @@ import time
 
 
 class GameEngine:
+    """
+    Handles game logic, state, and question management for the trivia game.
+    """
+
     def __init__(self, categories=None):
+        # Initialize game state
         self.questions = []
         self.current_index = 0
         self.score = 0
@@ -13,6 +18,10 @@ class GameEngine:
         self.token = self.get_token()
 
     def get_token(self):
+        """
+        Requests a session token from the Open Trivia DB API.
+        Ensures unique questions for each session.
+        """
         print("[*] Requesting session token...")
         resp = requests.get("https://opentdb.com/api_token.php?command=request")
         data = resp.json()
@@ -21,12 +30,20 @@ class GameEngine:
         return token
 
     def start_game(self):
+        """
+        Resets game state and loads questions.
+        """
         self.lives = 5
         self.score = 0
         self.current_index = 0
         self.fetch_questions()
 
     def fetch_questions(self, amount=10):
+        """
+        Fetches questions from Open Trivia DB for each selected category.
+        Respects API rate limits (5 seconds between requests).
+        Shuffles all questions before starting the game.
+        """
         all_questions = []
         if self.categories:
             for cat in self.categories:
@@ -35,7 +52,7 @@ class GameEngine:
                 data = response.json()
                 questions = data.get("results", [])
                 all_questions.extend(questions)
-                time.sleep(5)
+                time.sleep(5)  # Respect API rate limit
         else:
             url = f"https://opentdb.com/api.php?amount={amount}&type=multiple&token={self.token}"
             response = requests.get(url)
@@ -46,6 +63,9 @@ class GameEngine:
         self.current_index = 0
 
     def update(self):
+        """
+        Ensures questions are loaded and fetches more if needed.
+        """
         # Only fetch if there are no questions and lives remain
         if not self.questions and self.lives > 0:
             self.fetch_questions()
@@ -56,6 +76,9 @@ class GameEngine:
             self.current_index = 0
 
     def get_game_state(self):
+        """
+        Returns the current game state for rendering in the UI.
+        """
         if self.lives <= 0:
             return {"finished": True, "score": self.score, "lives": self.lives}
         if not self.questions:
@@ -76,6 +99,9 @@ class GameEngine:
             return {"loading": True, "score": self.score, "lives": self.lives}
 
     def handle_input(self, user_input, correct_answer):
+        """
+        Processes user input, updates score and lives, and advances to the next question.
+        """
         if self.lives <= 0 or self.current_index >= len(self.questions):
             return
         if user_input is None:
