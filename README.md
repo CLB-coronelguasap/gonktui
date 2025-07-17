@@ -2,48 +2,42 @@
 
 This project is a text-based user interface (TUI) game built using Python. It utilizes a game engine to manage game logic and a TUI library to handle user interactions.
 
-## Project Structure
-
-```
-gonktui
-├── README.md
-├── requirements.txt
-├── game
-│   ├── engine.py
-├── main.py
-└── ui
-    └── tui.py
-
-6 directories, 11 files
-```
-
 ## Setup Instructions
 
-1. Clone the repository:
+1. **Install Python 3.11**  
+   Download and install Python 3.11 from [python.org](https://www.python.org/downloads/release/python-3110/).
+
+2. **Create a virtual environment with Python 3.11**  
    ```
-   git clone https://github.com/CLB-coronelguasap/gonktui.git
-   cd tui-game
+   python3.11 -m venv venv
    ```
 
-2. Install the required dependencies:
+3. **Activate the virtual environment**  
+   - On Linux/macOS:
+     ```
+     source venv/bin/activate
+     ```
+   - On Windows:
+     ```
+     venv\Scripts\activate
+     ```
+
+4. **Install the required dependencies**  
    ```
    pip install -r requirements.txt
    ```
 
-## Gameplay Instructions
-
-- Run the game by executing the main script:
-  ```
-  python src/main.py
-  ```
-
-- Follow the on-screen instructions to navigate through the game.
+5. **Run the game**  
+   ```
+   python main.py
+   ```
 
 ## Dependencies
 
 - requests
-- windows-curses (for Windows)
+- windows-curses (only needed on Windows)
 
-## Contributing
+## Notes
 
-Feel free to submit issues or pull requests for improvements or bug fixes.
+- On Windows, `windows-curses` is required for TUI support.
+- Python 3.12+ is not supported by `windows-curses` as of July 2025.
