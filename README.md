@@ -22,7 +22,7 @@ tui-game
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
+   git clone https://github.com/CLB-coronelguasap/gonktui.git
    cd tui-game
    ```
 
@@ -42,9 +42,8 @@ tui-game
 
 ## Dependencies
 
-This project requires the following Python libraries:
-
-- [npyscreen](https://npyscreen.readthedocs.io/en/latest/) or [urwid](http://urwid.org/) for creating the text-based user interface.
+- requests
+- windows-curses (for Windows)
 
 ## Contributing
 
