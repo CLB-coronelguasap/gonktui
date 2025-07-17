@@ -5,17 +5,17 @@ This project is a text-based user interface (TUI) game built using Python. It ut
 ## Project Structure
 
 ```
-tui-game
-├── src
-│   ├── main.py          # Entry point of the game
-│   ├── game
-│   │   ├── __init__.py  # Game package initialization
-│   │   └── engine.py    # Game engine managing game state and logic
-│   ├── ui
-│   │   ├── __init__.py  # UI package initialization
-│   │   └── tui.py       # Text-based user interface handling
-├── requirements.txt      # Project dependencies
-└── README.md             # Project documentation
+gonktui
+├── README.md
+├── requirements.txt
+└── src
+    ├── game
+    │   ├── engine.py
+    ├── main.py
+    └── ui
+        └── tui.py
+
+6 directories, 11 files
 ```
 
 ## Setup Instructions
