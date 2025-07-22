@@ -34,7 +34,7 @@ def fetch_categories():
 
 class TUI:
     """
-    Text User Interface class for the GONKWARE trivia game.
+    Text User Interface class for the Game.
     Handles menus, category selection, loading screens, and game rendering.
     """
     def __init__(self):
@@ -66,7 +66,7 @@ class TUI:
 
     def _init_colors(self):
         """
-        Initializes color pairs for the TUI.
+        Initializes color pairs for TUI, For colorizing.
         """
         curses.start_color()
         curses.use_default_colors()
@@ -207,13 +207,13 @@ class TUI:
 
     def display_loading(self, fetching=False):
         """
-        Displays a stylized loading screen with technical messages and spinner.
+        Displays loading screen with faux technical looking messages.
         """
         curses.wrapper(self._loading_screen, fetching)
 
     def _loading_screen(self, stdscr, fetching):
         """
-        Internal method for the loading screen animation.
+        Internal method for animating the loading screen (I believe this is now obsolete, but keep it in incase it isn't.
         """
         self._init_colors()
         stdscr.clear()
@@ -308,14 +308,14 @@ class TUI:
         safe_addstr(6, 4, question, curses.A_UNDERLINE)
 
         selected = 0
-        stdscr.timeout(7000)  # 7 seconds timer
+        stdscr.timeout(10000)  # 7 seconds timer
         start_time = time.time()
         while True:
             for i, choice in enumerate(choices):
                 attr = curses.A_REVERSE if i == selected else curses.A_NORMAL
                 safe_addstr(8 + i, 6, f"{i+1}. {choice}", attr)
-            remaining = max(0, 7 - int(time.time() - start_time))
-            safe_addstr(8 + len(choices) + 2, 6, f"Time left: {remaining}s", curses.A_DIM)
+            remaining = max(0, 10 - int(time.time() - start_time))
+            safe_addstr(8 + len(choices) + 2, 6, f"Time left: {remaining} seconds", curses.A_DIM)
             stdscr.refresh()
             key = stdscr.getch()
             if key == -1:  # Timeout
@@ -329,7 +329,7 @@ class TUI:
 
     def get_user_input(self):
         """
-        Not needed, handled in render_game_state.
+        Not needed, handled in render_game_state, this is just in case I need it \(CLEANUP NEEDED\).
         """
         pass
 
@@ -341,7 +341,7 @@ class TUI:
 
     def _loading_and_fetch(self, stdscr, engine):
         """
-        Internal method for loading screen with real-time question fetching.
+        Internal method for loading screen, this is the method currently implemented.
         """
         self._init_colors()
         stdscr.clear()
