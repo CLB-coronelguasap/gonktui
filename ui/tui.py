@@ -3,8 +3,8 @@ import random
 import html
 import time
 import requests
-import json
 import os
+import json
 
 # ASCII art logo for the main menu
 GONKWARE_ART = [
@@ -16,14 +16,10 @@ GONKWARE_ART = [
     " ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝"
 ]
 
-# Path for saving user preferences
 PREFS_FILE = os.path.expanduser("~/.gonkware_prefs.json")
 
 def fetch_categories():
-    """
-    Fetches trivia categories from the Open Trivia DB API.
-    Returns a list of category dictionaries.
-    """
+    """Fetches trivia categories from the Open Trivia DB API."""
     url = "https://opentdb.com/api_category.php"
     try:
         resp = requests.get(url, timeout=5)
@@ -33,19 +29,13 @@ def fetch_categories():
         return []
 
 class TUI:
-    """
-    Text User Interface class for the GONKWARE trivia game.
-    Handles menus, category selection, loading screens, and game rendering.
-    """
+    """Simple Text User Interface for the trivia game."""
     def __init__(self):
-        self.screen = None
         self.selected_categories = set()
         self.load_preferences()
 
     def load_preferences(self):
-        """
-        Loads user category preferences from a local file.
-        """
+        """Loads user category preferences from a local file."""
         if os.path.exists(PREFS_FILE):
             try:
                 with open(PREFS_FILE, "r") as f:
@@ -55,9 +45,7 @@ class TUI:
                 self.selected_categories = set()
 
     def save_preferences(self):
-        """
-        Saves user category preferences to a local file.
-        """
+        """Saves user category preferences to a local file."""
         try:
             with open(PREFS_FILE, "w") as f:
                 json.dump({"categories": list(self.selected_categories)}, f)
@@ -65,9 +53,7 @@ class TUI:
             pass
 
     def _init_colors(self):
-        """
-        Initializes color pairs for the TUI.
-        """
+        """Initializes color pairs for the TUI."""
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_CYAN, -1)      # Logo
@@ -75,24 +61,18 @@ class TUI:
         curses.init_pair(3, curses.COLOR_YELLOW, -1)    # Highlight
         curses.init_pair(4, curses.COLOR_GREEN, -1)     # Selected
         curses.init_pair(5, curses.COLOR_RED, -1)       # Error
-        curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLUE) # Menu box
 
     def display_menu(self):
-        """
-        Displays the main menu and returns the selected categories or None if exited.
-        """
+        """Displays the main menu and returns the selected categories or None if exited."""
         return curses.wrapper(self._main_menu)
 
     def _main_menu(self, stdscr):
-        """
-        Internal method to render the main menu.
-        """
         self._init_colors()
         stdscr.clear()
         stdscr.border(0)
         max_y, max_x = stdscr.getmaxyx()
 
-        # Draw ASCII art logo at the top with color
+        # Draw ASCII art logo at the top
         for i, line in enumerate(GONKWARE_ART):
             stdscr.addstr(2 + i, max_x // 2 - len(line) // 2, line, curses.color_pair(1) | curses.A_BOLD)
 
@@ -115,7 +95,7 @@ class TUI:
                 else:
                     stdscr.addstr(y, box_left, "|" + " " * (box_width - 2) + "|")
 
-            # Draw menu items (no blue background)
+            # Draw menu items
             for i, item in enumerate(menu_items):
                 y = box_top + 2 + i * 2
                 x = max_x // 2 - len(item) // 2
@@ -205,79 +185,14 @@ class TUI:
         stdscr.clear()
         stdscr.border(0)
 
-    def display_loading(self, fetching=False):
-        """
-        Displays a stylized loading screen with technical messages and spinner.
-        """
-        curses.wrapper(self._loading_screen, fetching)
-
-    def _loading_screen(self, stdscr, fetching):
-        """
-        Internal method for the loading screen animation.
-        """
-        self._init_colors()
-        stdscr.clear()
-        stdscr.border(0)
-        max_y, max_x = stdscr.getmaxyx()
-        messages = [
-            "[gonkware] Initializing trivia subsystem...",
-            "[gonkware] Allocating session token buffer...",
-            "[gonkware] Connecting to Open Trivia DB @ 104.21.234.61:443...",
-            "[gonkware] Performing TLS handshake...",
-            "[gonkware] HTTP GET /api_token.php?command=request",
-            "[gonkware] Session token received.",
-            "[gonkware] Setting up category cache...",
-            "[gonkware] HTTP GET /api_category.php",
-            "[gonkware] Parsing category list...",
-            "[gonkware] Building question request queue...",
-            "[gonkware] Checking API rate limits...",
-            "[gonkware] Spawning worker thread [pid 1423]...",
-            "[gonkware] Allocating question buffer...",
-            "[gonkware] HTTP GET /api.php?amount=10&type=multiple&category=...",
-            "[gonkware] Waiting for API rate limit (5s)...",
-            "[gonkware] HTTP 200 OK",
-            "[gonkware] Decoding JSON payload...",
-            "[gonkware] Extracting questions...",
-            "[gonkware] Validating question objects...",
-            "[gonkware] Shuffling question buffer...",
-            "[gonkware] Initializing answer cache...",
-            "[gonkware] Setting up game state...",
-            "[gonkware] Loading UI theme...",
-            "[gonkware] Checking system entropy...",
-            "[gonkware] Trivia engine ready.",
-        ]
-        y_start = 2
-        x_left = 2
-        spinner = ['|', '/', '-', '\\']
-        for i, msg in enumerate(messages):
-            y = y_start + i
-            color = curses.color_pair(2) if i < len(messages) - 1 else curses.color_pair(4) | curses.A_BOLD
-            stdscr.addstr(y, x_left, msg, color)
-            stdscr.refresh()
-            # Spinner animation for technical steps
-            if fetching and ("Fetching questions" in msg or "Waiting for API rate limit" in msg or "HTTP GET" in msg):
-                for spin in range(15):
-                    stdscr.addstr(y, x_left + len(msg) + 2, spinner[spin % 4], curses.color_pair(3) | curses.A_BOLD)
-                    stdscr.refresh()
-                    time.sleep(0.08)
-                stdscr.addstr(y, x_left + len(msg) + 2, " ", curses.color_pair(3))
-            else:
-                time.sleep(0.18 if i < len(messages) - 2 else 0.5)
-        time.sleep(0.5)
-
     def render_game_state(self, game_state):
-        """
-        Renders the current game state (question, choices, score, lives).
-        """
+        """Renders the current game state (question, choices, score, lives)."""
         if game_state.get("loading"):
             self.display_loading()
             return None
         return curses.wrapper(self._render, game_state)
 
     def _render(self, stdscr, game_state):
-        """
-        Internal method to render the question and choices.
-        """
         stdscr.clear()
         stdscr.border()
         max_y, max_x = stdscr.getmaxyx()
@@ -327,86 +242,16 @@ class TUI:
             elif key in [curses.KEY_ENTER, ord('\n'), ord('\r')]:
                 return choices[selected]
 
-    def get_user_input(self):
-        """
-        Not needed, handled in render_game_state.
-        """
-        pass
+    def display_loading(self):
+        """Displays a simple loading screen."""
+        curses.wrapper(self._loading_screen)
 
-    def display_loading_and_fetch(self, engine):
-        """
-        Displays the animated loading screen and fetches questions per category.
-        """
-        curses.wrapper(self._loading_and_fetch, engine)
-
-    def _loading_and_fetch(self, stdscr, engine):
-        """
-        Internal method for loading screen with real-time question fetching.
-        """
+    def _loading_screen(self, stdscr):
         self._init_colors()
         stdscr.clear()
         stdscr.border(0)
         max_y, max_x = stdscr.getmaxyx()
-        categories = engine.categories
-        total = len(categories)
-        all_questions = []
-        spinner = ['|', '/', '-', '\\']
-        messages = [
-            "[gonkware] Initializing trivia subsystem...",
-            "[gonkware] Allocating session token buffer...",
-            "[gonkware] Connecting to Open Trivia DB...",
-            "[gonkware] Building question request queue...",
-            "[gonkware] Fetching questions from categories...",
-        ]
-        x_left = 2
-        y_start = 2
-
-        # Show initial messages at the top left
-        for i, msg in enumerate(messages):
-            y = y_start + i
-            stdscr.addstr(y, x_left, msg, curses.color_pair(2))
-            stdscr.refresh()
-            time.sleep(0.25)
-
-        # Fetch questions per category with progress
-        category_map = {str(cat['id']): cat['name'] for cat in fetch_categories()}
-        for idx, cat in enumerate(categories):
-            cat_name = category_map.get(str(cat), f"Category {cat}")
-            msg = f"[gonkware] Fetching: {cat_name} [{idx+1}/{total}]"
-            y = y_start + len(messages) + idx
-            stdscr.addstr(y, x_left, msg, curses.color_pair(3) | curses.A_BOLD)
-            stdscr.refresh()
-            # Spinner animation while fetching
-            for spin in range(20):
-                stdscr.addstr(y, x_left + len(msg) + 2, spinner[spin % 4], curses.color_pair(4) | curses.A_BOLD)
-                stdscr.refresh()
-                time.sleep(0.08)
-            stdscr.addstr(y, x_left + len(msg) + 2, " ", curses.color_pair(4))
-            # Actually fetch questions for this category
-            url = f"https://opentdb.com/api.php?amount=10&type=multiple&category={cat}&token={engine.token}"
-            response = requests.get(url)
-            data = response.json()
-            questions = data.get("results", [])
-            all_questions.extend(questions)
-            stdscr.addstr(y, x_left + len(msg) + 5, f"[{len(questions)} loaded]", curses.color_pair(2))
-            stdscr.refresh()
-            time.sleep(0.2)
-            if idx < total - 1:
-                # Rate limit message on a new line, top left
-                rate_msg = "[gonkware] Waiting 5 seconds to avoid API rate limiting..."
-                stdscr.addstr(y + 1, x_left, rate_msg, curses.color_pair(5))
-                stdscr.refresh()
-                time.sleep(5)
-                stdscr.addstr(y + 1, x_left, " " * len(rate_msg), curses.color_pair(5))  # Clear after wait
-
-        # Shuffle and assign questions
-        random.shuffle(all_questions)
-        engine.questions = all_questions
-        engine.current_index = 0
-
-        # Final message at the top left
-        final_msg = "[gonkware] Trivia engine ready."
-        y = y_start + len(messages) + total + 2
-        stdscr.addstr(y, x_left, final_msg, curses.color_pair(4) | curses.A_BOLD)
+        msg = "Loading questions..."
+        stdscr.addstr(max_y // 2, max_x // 2 - len(msg) // 2, msg, curses.color_pair(2) | curses.A_BOLD)
         stdscr.refresh()
-        time.sleep(1)
+        time.sleep(2)
