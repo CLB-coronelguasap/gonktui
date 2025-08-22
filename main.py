@@ -4,14 +4,15 @@ from ui.tui import TUI
 def main():
     tui = TUI()
     while True:
-        # Show menu and get categories
-        categories = tui.display_menu()
-        if categories is None:
+        # Show menu and get categories and difficulty
+        result = tui.display_menu()
+        if result is None:
             print("Goodbye!")
             break
+        categories, difficulty = result
 
-        # Start a new game with selected categories
-        engine = GameEngine(categories)
+        # Start a new game with selected categories and difficulty
+        engine = GameEngine(categories, difficulty)
         engine.fetch_questions()
 
         # Game loop
