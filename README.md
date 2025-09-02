@@ -34,7 +34,7 @@ gonktui
 
 - Run the game by executing the main script:
   ```
-  python src/main.py
+  python main.py
   ```
 
 - Follow the on-screen instructions to navigate through the game.
